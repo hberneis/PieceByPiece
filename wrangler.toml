@@ -1,0 +1,11 @@
+name = "piecebypiece"
+compatibility_date = "2025-07-24"
+
+[site]
+bucket = "./dist"  # The folder where your built static files live
+entry-point = "workers-site"
+
+# Optional for environment variables or other settings
+# [env.production]
+# route = "https://example.com/*"
+# zone_id = "your-zone-id"
