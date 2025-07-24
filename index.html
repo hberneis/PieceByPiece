@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piano Piece Generator 🎹</title>
+
+  <!-- 🎨 Stylish CSS -->
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(120deg, #f5eefd 0%, #f0f7fd 90%);
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+      color: #753aee;
+      letter-spacing: 2px;
+      text-shadow: 1px 2px 8px #f9dbff30;
+    }
+
+    label {
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #555;
+    }
+
+    select, button {
+      font-size: 1rem;
+      margin: 0.3rem 0 1.3rem 0;
+      padding: 0.65em 1.1em;
+      border-radius: 8px;
+      border: 1px solid #d0b2fd;
+      background: #fffafd;
+      transition: box-shadow 0.2s, border 0.2s;
+    }
+
+    select:focus, button:focus {
+      border: 1.5px solid #753aee;
+      outline: none;
+      box-shadow: 0 0 0 2px #dabfff60;
+    }
+
+    button {
+      background: linear-gradient(90deg, #9466f9 60%, #6befff 100%);
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 2px 10px #b685f420;
+      border: none;
+      margin-right: 0.8rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+
+    button:hover {
+      filter: brightness(1.07);
+      box-shadow: 0 4px 18px #8642e975;
+      transform: translateY(-2px) scale(1.03);
+      transition: all 0.18s;
+    }
+
+    #result {
+      min-height: 90px;
+      min-width: 260px;
+      padding: 1.2em 1.8em;
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(90deg, #fffccf 40%, #f0ebff 100%);
+      border-radius: 18px;
+      border: 1.5px solid #dabfff;
+      box-shadow: 0 2px 18px #d4cef81a;
+      font-family: 'Fira Mono', 'Roboto Mono', monospace;
+      font-size: 1.06em;
+      color: #49426e;
+      word-break: break-word;
+      line-height: 1.6;
+      position: relative;
+      z-index: 2;
+    }
+
+    #result strong {
+      color: #753aee;
+      font-weight: 800;
+    }
+
+    h3 {
+      color: #9643ff;
+      margin-top: 0.5em;
+      margin-bottom: 0.4em;
+    }
+
+    @media (max-width: 600px) {
+      select, button {
+        width: 100%;
+        font-size: 1em;
+      }
+      body {
+        padding: 1.5rem;
+      }
+    }
+
+    /* 🎉 Canvas Overlay for Confetti */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎹 Piano Piece Generator</h1>
+
+  <label for="difficulty">🎯 Difficulty</label><br />
+  <select id="difficulty">
+    <option value="">Any</option>
+    <option value="Easy">Easy</option>
+    <option value="Medium">Medium</option>
+    <option value="Hard">Hard</option>
+  </select><br />
+
+  <label for="genre">🎼 Genre</label><br />
+  <select id="genre">
+    <option value="">Any</option>
+    <option value="Classical">Classical</option>
+    <option value="Romantic">Romantic</option>
+    <option value="Impressionist">Impressionist</option>
+    <option value="New Age">New Age</option>
+    <option value="Ragtime">Ragtime</option>
+    <option value="Pop">Pop</option>
+    <option value="Anime">Anime</option>
+    <option value="Movie">Movie</option>
+  </select><br />
+
+  <label for="artist">🎹 Composer / Artist</label><br />
+  <select id="artist">
+    <option value="">Any</option>
+    <option value="Beethoven">Beethoven</option>
+    <option value="Mozart">Mozart</option>
+    <option value="Yiruma">Yiruma</option>
+    <option value="Debussy">Debussy</option>
+    <option value="Chopin">Chopin</option>
+    <option value="Satie">Satie</option>
+    <option value="Joplin">Joplin</option>
+    <option value="Liszt">Liszt</option>
+    <option value="Joe Hisaishi">Joe Hisaishi</option>
+    <option value="Hans Zimmer">Hans Zimmer</option>
+  </select><br />
+
+  <button onclick="generate()">🎶 Generate</button>
+  <button onclick="showHistory()">📜 View History</button>
+  <button onclick="clearHistory()">🧹 Clear History</button>
+
+  <div id="result">
+    <em>Generate a piece to get started...</em>
+  </div>
+
+  <!-- 🎉 Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- 👇 Load Your JS Separately So It's Easier to Manage -->
+  <script src="script.js"></script>
+
+  <!-- 🎶 Music Note Confetti Effect -->
+  <script>
+class NoteParticle {
+  constructor(x, y) {
+    const angle = Math.random() * 2 * Math.PI; // 0 to 2*PI
+    const speed = 1 + Math.random() * 3;
+
+    this.x = x;
+    this.y = y;
+    this.velocityX = Math.cos(angle) * speed;
+    this.velocityY = Math.sin(angle) * speed;
+
+    this.size = 20 + Math.random() * 10;
+    this.alpha = 1;
+    this.rotation = Math.random() * 360;
+    this.rotationSpeed = (Math.random() - 0.5) * 10;
+    this.life = 100 + Math.random() * 50;
+    this.note = this.randomNote();
+  }
+
+  randomNote() {
+    const notes = ["\u266A", "\u266B", "\u2669"]; // ♪ ♫ ♩
+    return notes[Math.floor(Math.random() * notes.length)];
+  }
+
+  update() {
+    this.x += this.velocityX;
+    this.y += this.velocityY;
+    this.velocityY += 0.02; // mild gravity if you want
+    this.alpha -= 0.015;
+    this.rotation += this.rotationSpeed;
+    this.life--;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(this.alpha, 0);
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation * Math.PI / 180);
+    ctx.fillStyle = `hsl(${this.rotation % 360}, 80%, 55%)`;
+    ctx.font = `${this.size}px serif`;
+    ctx.fillText(this.note, 0, 0);
+    ctx.restore();
+  }
+}
+
+(() => {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function emitNotes(x, y) {
+    const count = 18 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < count; i++) {
+      particles.push(new NoteParticle(x, y));
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter(p => p.alpha > 0 && p.life > 0);
+    particles.forEach(p => {
+      p.update();
+      p.draw(ctx);
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  document.body.addEventListener('click', (e) => {
+    emitNotes(e.clientX, e.clientY);
+  });
+})();
+</script>
+
+
+</body>
+</html>
