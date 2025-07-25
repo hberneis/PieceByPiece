@@ -4,7 +4,7 @@ account_id="4dd8241a9a48040d95ab8579c0d0336a"
 workers_dev = true
 
 [site]
-bucket = "./dist"  # The folder where your built static files live
+bucket = "./Piecebypiecerepo"  # The folder where your built static files live
 
 # Optional for environment variables or other settings
 # [env.production]
